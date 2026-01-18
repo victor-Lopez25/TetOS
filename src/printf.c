@@ -16,12 +16,12 @@ struct number_fmt {
   bool printPrefix; /* print '0b', '0o', '0x' */
   bool zeroPad; /* pad with 0s */
   bool printSign; /* print '+' when positive */
-  bool hexLowercase; /* print the hex characters in lowercase */
+  bool hexUppercase; /* print the hex characters in lowercase */
 };
 
 bool print_number(size_t number, uint8_t base, bool is_signed, struct number_fmt fmt)
 {
-  const char *digits = fmt.hexLowercase ? "0123456789abcdef" : "0123456789ABCDEF";
+  const char *digits = fmt.hexUppercase ? "0123456789ABCDEF" : "0123456789abcdef";
   char buffer[68]; /* ['+'|'-'] '0b' + 64bits + '\0' */
   bool negative = false;
   size_t i = 0;
@@ -94,7 +94,7 @@ void vprintf(const char *fmt, va_list vargs)
         .printPrefix = false,
         .zeroPad = false,
         .printSign = false,
-        .hexLowercase = false,
+        .hexUppercase = false,
       };
 
       // flags
