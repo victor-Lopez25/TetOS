@@ -39,6 +39,8 @@ void kernel_main(void) {
   
   printf("\n\nHello %s\n", "World!");
   printf("1 + 2 = %d, %x\n", 1 + 2, 0x1234abcd);
+  printf("%+d, %#x\n", 2465, 0xabcd);
+  printf("%+#0e\n", 0xabcd);
 
   for (;;) {
     __asm__ __volatile__("wfi");

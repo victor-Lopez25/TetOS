@@ -12,8 +12,9 @@ void puts(const char *s) {
 }
 
 struct number_fmt {
-  uint8_t lengthSpecifier; /* minimum length, pad with 0s */
+  uint8_t lengthSpecifier; /* minimum length, pad with spaces or 0s */
   bool printPrefix; /* print '0b', '0o', '0x' */
+  bool zeroPad; /* pad with 0s */
   bool printSign; /* print '+' when positive */
   bool hexLowercase; /* print the hex characters in lowercase */
 };
@@ -39,7 +40,10 @@ bool print_number(size_t number, uint8_t base, bool is_signed, struct number_fmt
     number /= base;
   } while(number > 0);
 
-  while(i < fmt.lengthSpecifier) buffer[i++] = '0'; /* pad with 0s */
+  if(fmt.zeroPad)
+    while(i < fmt.lengthSpecifier) buffer[i++] = '0'; /* pad with 0s */
+  else
+    while(i < fmt.lengthSpecifier) buffer[i++] = ' '; /* pad with spaces */
 
   if(fmt.printPrefix) {
     switch(base) {
@@ -78,17 +82,41 @@ bool print_number(size_t number, uint8_t base, bool is_signed, struct number_fmt
 
 void vprintf(const char *fmt, va_list vargs)
 {
-  // TODO: Support this
-  struct number_fmt numFmt = {
-    .lengthSpecifier = 0,
-    .printPrefix = false,
-    .printSign = false,
-    .hexLowercase = false,
-  };
-
+  char fmtBuf[6] = {0};
+  int fmtBufIdx;
   for(;*fmt; fmt++) {
     if(*fmt == '%') {
       fmt++;
+      fmtBufIdx = 0;
+
+      struct number_fmt numFmt = {
+        .lengthSpecifier = 0,
+        .printPrefix = false,
+        .zeroPad = false,
+        .printSign = false,
+        .hexLowercase = false,
+      };
+
+      // flags
+      for(int i = 0; i < 3; i++) {
+        if(*fmt == '#') {
+          numFmt.printPrefix = true;
+          fmtBuf[fmtBufIdx++] = '#';
+          fmt++;
+        } else if(*fmt == '0') {
+          numFmt.zeroPad = true;
+          fmtBuf[fmtBufIdx++] = '0';
+          fmt++;
+        } else if(*fmt == '+') {
+          numFmt.printSign = true;
+          fmtBuf[fmtBufIdx++] = '+';
+          fmt++;
+        } else {
+          break;
+        }
+      }
+
+      fmtBuf[fmtBufIdx++] = *fmt;
       switch(*fmt) {
         case '\0': {
           putchar('%');
@@ -131,7 +159,8 @@ void vprintf(const char *fmt, va_list vargs)
 
         default: {
           puts("Invalid format specifier '%");
-          putchar(*fmt);
+          fmtBuf[fmtBufIdx] = '\0';
+          puts(fmtBuf);
           puts("'\r\n");
           goto end;
         } break;
