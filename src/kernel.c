@@ -3,6 +3,12 @@
 #include "stdc/string.c"
 #include "printf.c"
 
+#define PANIC(fmt, ...)                                                   \
+  do {                                                                    \
+    printf("PANIC: %s:%d: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+    for(;;);                                                              \
+  } while(0)
+
 extern char __bss[], __bss_end[], __stack_top[];
 
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
@@ -54,6 +60,8 @@ void kernel_main(void) {
   printf("%+d, %#x\n", 2465, 0xabcd);
   printf("%+#0e\n", 0xabcd);
   PrintTeto();
+
+  PANIC("TETO destroy!!");
 
   for (;;) {
     __asm__ __volatile__("wfi");
