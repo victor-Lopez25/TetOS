@@ -1,7 +1,9 @@
 ## TetOS
 risc-v operating system, should eventually contain [Teto](https://en.wikipedia.org/wiki/Kasane_Teto)
 
-### Building
+![example execution](executions/execution.png "Teto!")
+
+### Quick start
 ```shell
 # replace build with build.exe on windows
 # you can also compile with other c compilers (msvc, clang, tinycc)
