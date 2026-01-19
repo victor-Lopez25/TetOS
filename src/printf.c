@@ -158,8 +158,8 @@ void vprintf(const char *fmt, va_list vargs)
         } break;
 
         default: {
-          puts("Invalid format specifier '%");
           fmtBuf[fmtBufIdx] = '\0';
+          puts("Invalid format specifier '%");
           puts(fmtBuf);
           puts("'\r\n");
           goto end;

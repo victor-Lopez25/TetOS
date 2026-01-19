@@ -34,6 +34,24 @@ void *memset(void *buf, char c, size_t n) {
   return buf;
 }
 
+void PrintTeto(void) {
+#if 0
+  printf("               n               \n");
+  printf("________  ------------  ________\n");
+  printf("\      / /            \ \      /\n");
+  printf(" \    / /  __/  _/\__  \ \    /\n");
+  printf("  \  / /__/ /__/     \__\ \  /\n");
+  printf("   \/                      \/\n");
+#else
+  printf("               n\n");
+  printf("________  ------------  ________\n");
+  printf("\\      / /            \\ \\      /\n");
+  printf(" \\    / /  __/  _/\\__  \\ \\    /\n");
+  printf("  \\  / /__/ /__/     \\__\\ \\  /\n");
+  printf("   \\/                      \\/\n");
+#endif
+}
+
 void kernel_main(void) {
   memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
   
@@ -41,6 +59,7 @@ void kernel_main(void) {
   printf("1 + 2 = %d, %x\n", 1 + 2, 0x1234abcd);
   printf("%+d, %#x\n", 2465, 0xabcd);
   printf("%+#0e\n", 0xabcd);
+  PrintTeto();
 
   for (;;) {
     __asm__ __volatile__("wfi");
