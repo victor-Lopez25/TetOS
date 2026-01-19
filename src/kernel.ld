@@ -17,12 +17,12 @@ SECTIONS {
   }
 
   .bss : ALIGN(4) {
-    __bss = .;
+    PROVIDE(__bss = .);
     *(.bss .bss.* .sbss .sbss.*);
-    __bss_end = .;
+    PROVIDE(__bss_end = .);
   }
 
   . = ALIGN(4);
   . += 128 * 1024; /* 128KB */
-  __stack_top = .;
+  PROVIDE(__stack_top = .);
 }
