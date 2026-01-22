@@ -18,4 +18,5 @@ gcc build.c -o build
  - [viclib](https://github.com/victor-Lopez25/viclib)
 
 ### Riscv tools
-For Windows, I recommend installing riscv-unknown-elf-* using msys2, but you find a better way go ahead
+For Windows, I recommend installing riscv-unknown-elf-* using msys2, but if you find a better way go ahead
+
