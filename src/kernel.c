@@ -33,14 +33,14 @@ void putchar(long ch) {
 
 void PrintTeto(void) {
 #if 0
-  printf("               n               \n");
+  printf("               r               \n");
   printf("________  ------------  ________\n");
   printf("\      / /            \ \      /\n");
   printf(" \    / /  __/  _/\__  \ \    /\n");
   printf("  \  / /__/ /__/     \__\ \  /\n");
   printf("   \/                      \/\n");
 #else
-  printf("               n\n");
+  printf("               r\n");
   printf("________  ------------  ________\n");
   printf("\\      / /            \\ \\      /\n");
   printf(" \\    / /  __/  _/\\__  \\ \\    /\n");
