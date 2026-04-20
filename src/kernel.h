@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "stdc/stdbool.h"
-#include "sbi.h"
+#include "sbi/sbi.h"
 
 // physical address is 34-40 bits in Sv32
 typedef uint64_t paddr_t;

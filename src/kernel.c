@@ -3,6 +3,8 @@
 #include "stdc/string.c"
 #include "printf.c"
 
+#include "sbi/sbi.c"
+
 extern char __bss[], __bss_end[], __stack_top[];
 
 extern void boot(void);
@@ -49,6 +51,19 @@ void PrintTeto(void) {
 #endif
 }
 
+void test_sbi(void)
+{
+  struct sbiret sbiSpecVersion = sbi_get_spec_version();
+  printf("Sbi Spec version: %d.%d\n", 
+         (sbiSpecVersion.uvalue >> 24), sbiSpecVersion.uvalue & 0xFFFFFF);
+
+  struct sbiret sbiImplId = sbi_get_impl_id();
+  printf("Sbi Impl id: %d\n", sbiImplId.uvalue);
+
+  bool DBCN_ok = sbi_probe_extension(SBI_DBCN_EID).uvalue == 1;
+  printf("Debug Console Extension EID: %s\n", DBCN_ok ? "available" : "unavailable");
+}
+
 void handle_trap(struct trap_frame *f) {
   (void)f;
   uint32_t scause = READ_CSR(scause);
@@ -68,6 +83,8 @@ void kernel_main(void) {
   printf("%+d, %#x\n", 2465, 0xabcd);
   printf("%+#0e\n", 0xabcd);
   PrintTeto();
+
+  test_sbi();
 
   //PANIC("TETO destroy!!");
   __asm__ __volatile__("unimp");

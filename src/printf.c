@@ -1,7 +1,6 @@
 #include <stdint.h> /* intmax_t */
 
 #include "stdc/stdarg.h"
-#include "sbi.h"
 
 // needs to be defined elsewhere
 void putchar(long ch);
