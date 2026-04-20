@@ -26,13 +26,19 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  cmd_Append(&cmd, RISCV_as, "src/boot.s", "-o", "bin/boot.o");
+  if(!CmdRun(&cmd)) {
+    fprintf(stderr, "Failed to assemble boot.s\n");
+    return 1;
+  }
+
   VL_Pushd(OUTPUT_DIR);
   cmd_Append(&cmd, RISCV_gcc, "-T", "../src/kernel.ld");
-  cmd_Append(&cmd, "kernel.o", "-o", "kernel.elf", FREESTANDING);
+  cmd_Append(&cmd, "boot.o", "kernel.o", "-o", "kernel.elf", FREESTANDING);
   if(!CmdRun(&cmd)) {
     fprintf(stderr, "Link failed\n");
     return 1;
-  }    
+  }
 
   cmd_Append(&cmd, "qemu-system-riscv64",
              "-machine", "virt",

@@ -11,6 +11,7 @@ gcc build.c -o build
 ./build
 #If you already have the ./build executable, you don't need to recompile it manually
 ```
+`Ctrl+A-C`: quit qemu shell
 
 ### Dependencies
  - Any c compiler that produces an executable that your machine can use (riscv-unknown-elf-gcc won't work if you have an amd64 system or windows)
