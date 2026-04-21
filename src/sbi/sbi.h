@@ -58,7 +58,29 @@ struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3,
 #define sbi_shutdown() sbi_call(0, 0, 0, 0, 0, 0, 0, 0x08)
 
 //////////////////////////////////
-// Debug Console Extension
+// CPPC Extension (since SBI version 2.0)
+//////////////////////////////////
+
+#define SBI_CPPC_EID 0x43505043
+
+/* sbiret.value will contain the register width or 0 */
+#define sbi_cppc_probe(cppc_reg_id) sbi_call(cppc_reg_id, 0, 0, 0, 0, 0, 0, SBI_CPPC_EID)
+
+/* when __riscv_xlen is 32, sbiret.value will only contain the lower 32 bits of the CPPC register value */
+#define sbi_cppc_read(cppc_reg_id) sbi_call(cppc_reg_id, 0, 0, 0, 0, 0, 1, SBI_CPPC_EID)
+
+/* when __riscv_xlen >= 64, sbiret.value will always be 0 */
+#define sbi_cppc_read_hi(cppc_reg_id) sbi_call(cppc_reg_id, 0, 0, 0, 0, 0, 2, SBI_CPPC_EID)
+
+#if __riscv_xlen == 64
+#define sbi_cppc_write(cppc_reg_id, val) sbi_call(cppc_reg_id, val, 0, 0, 0, 0, 3, SBI_CPPC_EID)
+#elif __riscv_xlen == 32
+#define sbi_cppc_write(cppc_reg_id, val) \
+  sbi_call(cppc_reg_id, (val) & 0xFFFFFFFF, (val) >> 32, 0, 0, 0, 3, SBI_CPPC_EID)
+#endif
+
+//////////////////////////////////
+// Debug Console Extension (since SBI version 2.0)
 //////////////////////////////////
 
 /* sbi Debug Console Extension EID */
@@ -74,6 +96,13 @@ struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3,
  **/
 #define sbi_debug_console_write(num_bytes, base_addr_lo, base_addr_hi) \
   sbi_call(num_bytes, base_addr_lo, base_addr_hi, 0, 0, 0, 0, SBI_DBCN_EID)
+
+#define sbi_debug_console_read(num_bytes, base_addr_lo, base_addr_hi) \
+  sbi_call(num_bytes, base_addr_lo, base_addr_hi, 0, 0, 0, 1, SBI_DBCN_EID)
+
+// Blocking
+#define sbi_debug_console_write_byte(byte) \
+  sbi_call(byte, 0, 0, 0, 0, 0, 2, SBI_DBCN_EID)
 
 //////////////////////////////////
 // Performance Monitoring Unit Extension
@@ -183,7 +212,69 @@ struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3,
 #define sbi_pmu_counter_get_info(counter_idx) \
   sbi_call(counter_idx, 0, 0, 0, 0, 0, 1, SBI_PMU_EID)
 
-// TODO: The rest of the functions
+enum {
+  SBI_PMU_CFG_FLAG_SKIP_MATCH  = 0x01,
+  SBI_PMU_CFG_FLAG_CLEAR_VALUE = 0x02,
+  SBI_PMU_CFG_FLAG_AUTO_START  = 0x04,
+  SBI_PMU_CFG_FLAG_SET_VUINH   = 0x08,
+  SBI_PMU_CFG_FLAG_SET_VSINH   = 0x10,
+  SBI_PMU_CFG_FLAG_SET_UINH    = 0x20,
+  SBI_PMU_CFG_FLAG_SET_SINH    = 0x40,
+  SBI_PMU_CFG_FLAG_SET_MINH    = 0x80,
+  // The rest are reserved for future use
+};
+
+#if __riscv_xlen == 64
+#define sbi_pmu_counter_config_matching(counter_idx_base, counter_idx_mask, config_flags, event_idx, event_data) \
+  sbi_call(counter_idx_base, counter_idx_mask, config_flags, event_idx, event_data, 0, 2, SBI_PMU_EID)
+#elif __riscv_xlen == 32
+#define sbi_pmu_counter_config_matching(counter_idx_base, counter_idx_mask, config_flags, event_idx, event_data) \
+  sbi_call(counter_idx_base, counter_idx_mask, config_flags, event_idx, (event_data) & 0xFFFFFFFF, (event_data) >> 32, 2, SBI_PMU_EID)
+#endif
+
+enum {
+  SBI_PMU_SET_INIT_VALUE           = 0x01,
+  SBI_PMU_START_FLAG_INIT_SNAPSHOT = 0x02,
+  // The rest are reserved for future use
+};
+
+#if __riscv_xlen == 64
+#define sbi_pmu_counter_start(counter_idx_base, counter_idx_mask, start_flags, initial_value) \
+  sbi_call(counter_idx_base, counter_idx_mask, start_flags, initial_value, 0, 0, 3, SBI_PMU_EID)
+#elif __riscv_xlen == 32
+#define sbi_pmu_counter_start(counter_idx_base, counter_idx_mask, start_flags, initial_value) \
+  sbi_call(counter_idx_base, counter_idx_mask, start_flags, (initial_value) & 0xFFFFFFFF, (initial_value) >> 32, 0, 3, SBI_PMU_EID)
+#endif
+
+enum {
+  SBI_PMU_STOP_FLAG_RESET         = 0x01,
+  SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT = 0x02,
+  // The rest are reserved for future use
+};
+
+#define sbi_pmu_counter_stop(counter_idx_base, counter_idx_mask, stop_flags) \
+  sbi_call(counter_idx_base, counter_idx_mask, stop_flags, 0, 0, 0, 4, SBI_PMU_EID)
+
+// On RV32 systems, sbiret.value will only contain the lower 32 bits of the current firmware counter
+#define sbi_pmu_counter_fw_read(counter_idx) \
+  sbi_call(counter_idx, 0, 0, 0, 0, 0, 5, SBI_PMU_EID)
+
+/* On RV64 (or higher) systems, sbiret.value is always 0
+ * Exists since SBI Version 2.0 */
+#define sbi_pmu_counter_fw_read_hi(counter_idx) \
+  sbi_call(counter_idx, 0, 0, 0, 0, 0, 6, SBI_PMU_EID)
+
+/* | **Name** | **Offset** | **Size** |
+ * | :--- | :--- | :--- |
+ * | counter_overflow_bitmap | 0x0000 | 8 |
+ * | counter_values | 0x0008 | 512 |
+ * | Reserved | 0x0208 | 3576 |
+ * 
+ * shmem_phys_lo _must_ be page aligned (4096) and the size of the snapshot shared mem is 4096
+ * Exists since SBI Version 2.0
+ */
+#define sbi_pmu_snapshot_set_shmem(shmem_phys_lo, shmem_phys_hi, flags) \
+  sbi_call(shmem_phys_lo, shmem_phys_hi, flags, 0, 0, 0, 7, SBI_PMU_EID)
 
 //////////////////////////////////
 // System Reset Extension
@@ -209,6 +300,20 @@ enum {
 
 #define sbi_system_reset(reset_type, reset_reason) \
   sbi_call(reset_type, reset_reason, 0, 0, 0, 0, 0, SBI_SRST_EID)
+
+//////////////////////////////////
+// Time Extension (since SBI version 2.0)
+//////////////////////////////////
+
+#define SBI_SUSP_EID 0x53555350
+
+/* This is a “suspend to RAM” sleep type, similar to ACPI’s S2 or S3. 
+ * Entry requires all but the calling hart be in the HSM STOPPED state 
+ * and all hart registers and CSRs saved to RAM */
+#define SBI_SUSP_FLAG_SUSPEND_TO_RAM 0
+
+#define sbi_system_suspend(sleep_type, resume_addr, opaque) \
+  sbi_call(sleep_type, resume_addr, opaque, 0, 0, 0, 0, SBI_SUSP_EID)
 
 //////////////////////////////////
 // Time Extension
