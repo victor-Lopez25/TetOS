@@ -21,3 +21,7 @@ gcc build.c -o build
 ### Riscv tools
 For Windows, I recommend installing riscv-unknown-elf-* using msys2, but if you find a better way go ahead
 
+For Arch:
+ - You might need to update with `sudo pacman -Syu` first
+ - I got the riscv-unknown-elf-* tools with `yay -S riscv-gnu-toolchain-bin`
+ - I got qemu with `sudo pacman -S qemu-system-riscv`
